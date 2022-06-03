@@ -1,4 +1,4 @@
-﻿
+﻿using Play.Common.Models;
 
 namespace Play.Catalog.Service.Models
 {

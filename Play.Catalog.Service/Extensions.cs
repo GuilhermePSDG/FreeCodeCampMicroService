@@ -1,5 +1,7 @@
-﻿using Play.Catalog.Service.Dtos;
+﻿global using Play.Catalog.Service;
 using Play.Catalog.Service.Models;
+
+
 
 namespace Play.Catalog.Service
 {
@@ -7,7 +9,7 @@ namespace Play.Catalog.Service
     {
         public static ItemDto AsDto(this Item item)
         {
-            return new ItemDto(item.Id, item.Name,item.Description, item.Price, item.CreatedDate);
+            return new ItemDto(item.Id, item.Name, item.Description, item.Price, item.CreatedDate);
         }
     }
 }
