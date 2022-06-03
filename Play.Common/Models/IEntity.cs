@@ -1,4 +1,4 @@
-﻿namespace Play.Catalog.Service.Models
+﻿namespace Play.Common.Models
 {
     public interface IEntity
     {
