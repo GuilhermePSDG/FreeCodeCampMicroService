@@ -1,4 +1,4 @@
-﻿namespace Play.Common.Settings
+﻿namespace Play.Catalog.Service.Settings
 {
     public class MongoDbSettings
     {

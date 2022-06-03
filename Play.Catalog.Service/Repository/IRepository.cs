@@ -1,12 +1,10 @@
-﻿using System.Linq.Expressions;
-using Play.Common.Models;
+﻿using Play.Catalog.Service.Models;
 
-namespace Play.Common.Repository
+namespace Play.Catalog.Service.Repository
 {
     public interface IRepository<Entity> where Entity : IEntity
     {
         public Task<List<Entity>> GetAllAsync();
-        public Task<List<Entity>> GetAllAsync(Expression<Func<Entity,bool>> filter);
         public Task<Entity?> GetByIdAsync(Guid Id);
         public Task CreateAsync(Entity item);
         public Task<Entity> UpdateAsync(Entity item);

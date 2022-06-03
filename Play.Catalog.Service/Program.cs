@@ -1,5 +1,7 @@
+using MongoDB.Driver;
 using Play.Catalog.Service.Models;
-using Play.Common.MongoDb;
+using Play.Catalog.Service.Repository;
+using Play.Catalog.Service.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,8 +14,16 @@ builder.Services.AddSwaggerGen();
 
 
 
-builder.Services.AddMongoDb();
-builder.Services.AddScopedMongoDbRepository<Item>("items");
+
+builder.Services.AddScoped(x =>
+{
+    var mongoDbSettings = builder.Configuration.GetRequiredSection(nameof(MongoDbSettings)).Get<MongoDbSettings>();
+    var serviceSettings = builder.Configuration.GetRequiredSection(nameof(ServiceSettings)).Get<ServiceSettings>();
+    return new MongoClient(mongoDbSettings.ConnectionString).GetDatabase(serviceSettings.ServiceName);
+});
+
+builder.Services.AddScoped<IRepository<Item>, MongoRepository<Item>> ();
+
 
 var app = builder.Build();
 
