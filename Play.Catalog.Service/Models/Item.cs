@@ -3,7 +3,7 @@
 namespace Play.Catalog.Service.Models
 {
 
-    public class Item
+    public class Item : IEntity
     {
         public Item()
         {
