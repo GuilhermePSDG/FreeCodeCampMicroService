@@ -12,21 +12,24 @@ namespace Play.Invetory.Service.Controllers
     [ApiController]
     public class ItemsController : ControllerBase
     {
-        private readonly IRepository<InventoryItem> repo;
-        private readonly CatalogClient client;
+        private readonly IRepository<InventoryItem> inventoryRepo;
+        private readonly IRepository<CatalogItem> catalogRepo;
 
-        public ItemsController(IRepository<InventoryItem> repo,CatalogClient client)
+        public ItemsController(IRepository<InventoryItem> inventoryRepo,IRepository<CatalogItem> catalogRepo)
         {
-            this.repo = repo;
-            this.client = client;
+            this.inventoryRepo = inventoryRepo;
+            this.catalogRepo = catalogRepo;
         }
         [HttpGet]   
         public async Task<IActionResult> GetAll(Guid UserId)
         {
             if (UserId == Guid.Empty) return Unauthorized();
-            var items = await this.repo.GetAllAsync(x => x.UserId == UserId);
-            var catalogItems = (await this.client.GetAllAsync());
-            var dtos = items.Select(x =>
+            var inventoryItems = await this.inventoryRepo.GetAllAsync(x => x.UserId == UserId);
+
+            var catalogItemIds = inventoryItems.Select(x => x.CatalogItemId);
+            var catalogItems = await this.catalogRepo.GetAllAsync(x => catalogItemIds.Contains(x.Id));
+            
+            var dtos = inventoryItems.Select(x =>
             {
                 var catalogItem = catalogItems.Single(ci => ci.Id == x.CatalogItemId);
                 return x.AsDto(catalogItem.Name, catalogItem.Description);
@@ -36,16 +39,16 @@ namespace Play.Invetory.Service.Controllers
         [HttpPost]
         public async Task<IActionResult> Post(GrantItemsDto item)
         {
-            var itemR = await this.repo.GetAsync(x => x.UserId == item.UserId && x.CatalogItemId == item.CatalogItemId);
+            var itemR = await this.inventoryRepo.GetAsync(x => x.UserId == item.UserId && x.CatalogItemId == item.CatalogItemId);
             if (itemR == null)
             {
                 itemR = new InventoryItem(item.UserId, item.CatalogItemId, item.Quantity);
-                await this.repo.CreateAsync(itemR);
+                await this.inventoryRepo.CreateAsync(itemR);
             }
             else
             {
                 itemR.Quantity += item.Quantity;
-                itemR = await this.repo.UpdateAsync(itemR);
+                itemR = await this.inventoryRepo.UpdateAsync(itemR);
             }
             return Ok(itemR);
         }

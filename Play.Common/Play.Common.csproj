@@ -5,13 +5,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <FileVersion>1.1.0.0</FileVersion>
-    <PackageReleaseNotes>Enable Get Single By Query</PackageReleaseNotes>
+    <FileVersion>1.2.1.0</FileVersion>
+	<Version>1.2.1</Version>
 	<BaseOutputPath>C:\Users\pc\Documents\NUGETPACK</BaseOutputPath>
-	<Version>1.1.0</Version>
+	<PackageReleaseNotes>Provide MassTransit with RabbitMQ</PackageReleaseNotes>
   </PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="MassTransit.AspNetCore" Version="7.3.1" />
+		<PackageReference Include="MassTransit.RabbitMQ" Version="7.3.1" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />

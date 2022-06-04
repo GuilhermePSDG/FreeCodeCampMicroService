@@ -1,9 +1,7 @@
+using Play.Common.MassTransit;
 using Play.Common.MongoDb;
-using Play.Invetory.Service.Clients;
+using Play.Invetory.Service;
 using Play.Invetory.Service.Models;
-using Polly;
-using Polly.Timeout;
-using System.Net.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,21 +14,11 @@ builder.Services.AddSwaggerGen();
 
 builder.Services
     .AddMongoDb()
-    .AddScopedMongoDbRepository<InventoryItem>("inventoryitems");
+    .AddScopedMongoDbRepository<InventoryItem>("inventoryitems")
+    .AddScopedMongoDbRepository<CatalogItem>("catalogitems")
+    .AddMassTransitWithRabbitMQ();
 
-builder.Services
-    .AddHttpClient<CatalogClient>(x => x.BaseAddress = new Uri("https://localhost:5000"))
-    .AddTransientHttpErrorPolicy(b => b.Or<TimeoutRejectedException>().WaitAndRetryAsync(3,(attempt) => TimeSpan.FromSeconds(Math.Pow(2,attempt)) + TimeSpan.FromMilliseconds(Random.Shared.NextDouble() * 1000)))
-    .AddTransientHttpErrorPolicy(b => b.Or<TimeoutRejectedException>()
-    .CircuitBreakerAsync
-        (
-            handledEventsAllowedBeforeBreaking:10,
-            durationOfBreak:TimeSpan.FromSeconds(15),
-            onBreak:(res,timeSpan) => { },
-            onReset:() => { }
-        )
-    )
-    .AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(1));
+builder.AddCatalogClient();
 
 var app = builder.Build();
 
@@ -48,3 +36,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+

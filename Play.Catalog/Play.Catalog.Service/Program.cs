@@ -1,10 +1,6 @@
 using Play.Catalog.Service.Models;
-using Play.Catalog.Service.Settings;
 using Play.Common.MongoDb;
-using Play.Common.Settings;
-using Play.Catalog.Contracts;
-using MassTransit;
-using MassTransit.Definition;
+using Play.Common.MassTransit;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
@@ -14,18 +10,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var serviceSettings = builder.Configuration.GetSection(nameof(ServiceSettings)).Get<ServiceSettings>();
-builder.Services.AddMassTransit(x =>
-{
-    x.AddConsumer<SubmitOrderConsumer>();
-    x.UsingRabbitMq((ctx, conf) =>
-    {
-        var rabbitMqSettings = builder.Configuration.GetSection(nameof(RabbitMQSettings)).Get<RabbitMQSettings>();
-        conf.Host(rabbitMqSettings.Host);
-        conf.ConfigureEndpoints(ctx, new KebabCaseEndpointNameFormatter(serviceSettings.ServiceName, false));
-    });
-});
-builder.Services.AddMassTransitHostedService();
+
+builder.Services.AddMassTransitWithRabbitMQ();
 builder.Services.AddMongoDb();
 builder.Services.AddScopedMongoDbRepository<Item>("items");
 
@@ -45,13 +31,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-
-
-class SubmitOrderConsumer : IConsumer<CatalogItemCreated>
-{
-    public async Task Consume(ConsumeContext<CatalogItemCreated> context)
-    {
-        Console.WriteLine("CONSUME EXECUTED");
-    }
-}
