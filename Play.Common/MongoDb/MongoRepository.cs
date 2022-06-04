@@ -40,5 +40,9 @@ namespace Play.Common.MongoDb
             return await collection.FindOneAndDeleteAsync(filter.Eq(x => x.Id, Id)) != null;
         }
 
+        public async Task<Entity> GetAsync(Expression<Func<Entity, bool>> filter)
+        {
+            return await collection.Find(filter).FirstOrDefaultAsync();
+        }
     }
 }

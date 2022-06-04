@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MassTransit;
+using Microsoft.AspNetCore.Mvc;
+using Play.Catalog.Contracts;
 using Play.Catalog.Service.Models;
 using Play.Common.Repository;
 
@@ -8,11 +10,12 @@ namespace Play.Catalog.Service.Controllers
     [ApiController]
     public class ItemsController : ControllerBase
     {
-        public IRepository<Item> repo { get; }
-
-        public ItemsController(IRepository<Item> repo)
+        private readonly IRepository<Item> repo;
+        private readonly IPublishEndpoint publishEndpoint;
+        public ItemsController(IRepository<Item> repo, IPublishEndpoint publishEndpoint)
         {
             this.repo = repo;
+            this.publishEndpoint = publishEndpoint;
         }
 
         [HttpGet]
@@ -29,6 +32,8 @@ namespace Play.Catalog.Service.Controllers
         {
             var item = new Models.Item(createItemDto.Name, createItemDto.Description, createItemDto.Price, DateTimeOffset.UtcNow);
             await repo.CreateAsync(item);
+            await publishEndpoint.Publish(new CatalogItemCreated(item.Id, item.Name, item.Description));
+            
             return CreatedAtAction(nameof(GetById), new { id = item.Id }, item.AsDto());
         }
 
@@ -41,12 +46,28 @@ namespace Play.Catalog.Service.Controllers
             item.Description = updateItemDto.Description;
             item.Price = updateItemDto.Price;
             item = await repo.UpdateAsync(item);
-            return item == null ? BadRequest() : Ok(item);
+            if(item != null)
+            {
+                await publishEndpoint.Publish(new CatalogItemUpdated(item.Id, item.Name, item.Description));
+                return Ok(item);
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
         [HttpDelete("{Id}")]
         public async Task<IActionResult> Delete([FromRoute] Guid Id)
         {
-            return await repo.DeleteAsync(Id) ? Ok() : BadRequest();
+            if(await repo.DeleteAsync(Id))
+            {
+                await publishEndpoint.Publish(new CatalogItemDeleted(Id));
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
 
     }

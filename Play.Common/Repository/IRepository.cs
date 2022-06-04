@@ -7,6 +7,7 @@ namespace Play.Common.Repository
     {
         public Task<List<Entity>> GetAllAsync();
         public Task<List<Entity>> GetAllAsync(Expression<Func<Entity,bool>> filter);
+        public Task<Entity> GetAsync(Expression<Func<Entity,bool>> filter);
         public Task<Entity?> GetByIdAsync(Guid Id);
         public Task CreateAsync(Entity item);
         public Task<Entity> UpdateAsync(Entity item);
